@@ -8,7 +8,7 @@ from keyboard.client_kb import review_btn
 from database import sqlite_db
 
 
-ID = 245955512
+ID = 285144226
 
 class FSMAddcurrency(StatesGroup):
     rub = State()
