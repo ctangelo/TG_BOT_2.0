@@ -3,12 +3,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from dispatcher import bot, dp
-from keyboard.admin_kb import currency_btn, gen_inline_visa_orders, gen_inline_charter_orders, gen_inline_hotel_orders, gen_inline_tour_orders, \
-        gen_inline_exchange_orders, gen_inline_main_menu, gen_inline_consultant_orders
+from keyboard.admin_kb import currency_btn, gen_inline_exchange_orders, gen_inline_main_menu, gen_inline_consultant_orders
+from keyboard.client_kb import review_btn
 from database import sqlite_db
 
 
-ID = 285144226
+ID = 245955512
 
 class FSMAddcurrency(StatesGroup):
     rub = State()
@@ -96,117 +96,40 @@ async def consultant_one_order(callback: types.CallbackQuery):
     button_url = f'tg://user?id={chat_id}'
     markup = InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
+    markup.add(InlineKeyboardButton(text='Заявка исполнена', callback_data=f'ready|consultant|{order[0]}'))
     markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|consultant|{order[0]}'))
     markup.add(InlineKeyboardButton(text='Назад', callback_data='consultant_order'))
     await bot.send_message(ID, f'Заявка на консультацию {order[0]}', reply_markup=markup)
 
-
-# @dp.message_handler(commands='evisa_order')
-async def evisa_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    data = await sqlite_db.all_visa()
-    await callback.message.answer('Заявки на оформление ЕВИЗЫ:', reply_markup=gen_inline_visa_orders(data))
-
-
-# @dp.callback_query_handler(lambda x: x.data and x.data.startswith('visa|'))
-async def evisa_one_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    order = await sqlite_db.one_visa(callback.data.split('|')[1], callback.data.split('|')[2])
-    chat_id = callback.data.split('|')[1]
-    button_url = f'tg://user?id={chat_id}'
-    markup = InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
-    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|evisa|{order[0]}|{order[1]}'))
-    markup.add(InlineKeyboardButton(text='Назад', callback_data='evisa_order'))
-    await bot.send_photo(ID, order[3])
-    await bot.send_photo(ID, order[4], f'Заявка на оформление E-Visa на {order[1]}', reply_markup=markup)
    
 
 # @dp.callback_query_handler(lambda x: x.data and x.data.startswith('delete|'))
 async def delete_order(callback: types.CallbackQuery):
     # await callback.message.delete()
     data = callback.data.split('|')
-    if data[1] == 'evisa':
-        await sqlite_db.delete_visa(data[2], data[3])
-        await evisa_order(callback)
-    
 
-    elif data[1] == 'exchange':
+    if data[1] == 'exchange':
         await sqlite_db.delete_exchange(data[2], data[3])
         await exchange_order(callback)
 
     elif data[1] == 'consultant':
         await sqlite_db.delete_consultant(data[2])
         await consultant_order(callback)
-    
-
-# @dp.callback_query_handler(text='charter_order')
-async def charter_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    data = await sqlite_db.see_charter()
-    await callback.message.answer('Заявки на Чартеры:', reply_markup=gen_inline_charter_orders(data))
 
 
-# @dp.callback_query_handler(lambda x: x.data and x.data.startswith('one_charter|'))
-async def charter_one_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    order = await sqlite_db.one_charter(callback.data.split('|')[1], callback.data.split('|')[2])
-    chat_id = callback.data.split('|')[1]
-    button_url = f'tg://user?id={chat_id}'
-    markup = InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
-    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|charter|{order[0]}|{order[3]}'))
-    markup.add(InlineKeyboardButton(text='Назад', callback_data='charter_order'))
-    if order[4] == 'в одну':
-        await callback.message.answer(f'Чартер\n {order[1]} - {order[2]} {order[4]} сторону\nДата вылета:{order[3]}\n'
-                                      'Кол-во человек:{order[6]}\nДети:{order[7]} ({order[8]})', reply_markup=markup)
-    else:
-        await callback.message.answer(f'Чартер\n {order[1]} - {order[2]} - {order[1]}\nДата:{order[3]} - {order[5]}\n'
-                                      'Кол-во человек:{order[6]}\nДети:{order[7]} ({order[8]})', reply_markup=markup)
+# @dp.callback_query_handler(lambda x: x.data and x.data.startswith('ready|'))
+async def ready_order(callback: types.CallbackQuery):
+    data = callback.data.split('|')
 
+    if data[1] == 'exchange':
+        await sqlite_db.delete_exchange(data[2], data[3])
+        await exchange_order(callback)
+        await bot.send_message(data[2], 'Спасибо что воспользовались нашими услугами по обмену валюты!', reply_markup=review_btn)
 
-# @dp.callback_query_handler(text='hotel_order')
-async def hotel_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    data = await sqlite_db.see_hotel()
-    await callback.message.answer('Заявки на бронирование отелей:', reply_markup=gen_inline_hotel_orders(data))
-
-
-# @dp.callback_query_handler(lambda x: x.data and x.data.startswith('one_hotel|'))
-async def hotel_one_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    order = await sqlite_db.one_hotel(callback.data.split('|')[1], callback.data.split('|')[2])
-    chat_id = callback.data.split('|')[1]
-    button_url = f'tg://user?id={chat_id}'
-    markup = InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
-    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|hotel|{order[0]}|{order[5]}'))
-    markup.add(InlineKeyboardButton(text='Назад', callback_data='hotel_order'))
-    
-    await callback.message.answer(f'Отель\nКурорт: {order[1]}\nНазвание: {order[2]} ({order[4]} звезды)\nДата:{order[5]} на {order[6]} ночей\n'
-                                  f'Кол-во человек:{order[7]}\nДети:{order[9]} ({order[10]})', reply_markup=markup)
-
-
-# @dp.callback_query_handler(text='tour_order')
-async def tour_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    data = await sqlite_db.see_tour()
-    await callback.message.answer('Заявки на Туры', reply_markup=gen_inline_tour_orders(data))
-
-
-# @dp.callback_query_handler(lambda x: x.data and x.data.startswith('one_tour|'))
-async def tour_one_order(callback: types.CallbackQuery):
-    await callback.message.delete()
-    order = await sqlite_db.one_tour(callback.data.split('|')[1], callback.data.split('|')[2])
-    chat_id = callback.data.split('|')[1]
-    button_url = f'tg://user?id={chat_id}'
-    markup = InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
-    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|tour|{order[0]}|{order[3]}'))
-    markup.add(InlineKeyboardButton(text='Назад', callback_data='tour_order'))
-    
-    await callback.message.answer(f'Тур\n{order[1]} - {order[2]}\nДата: {order[3]} на ({order[4]} ночей)\nОтель: {order[10]} ({order[11]} звезды)'
-                                  f'\nКол-во человек:{order[5]}\nДети:{order[7]} ({order[8]} лет)', reply_markup=markup)
+    elif data[1] == 'consultant':
+        await sqlite_db.delete_consultant(data[2])
+        await consultant_order(callback)
+        await bot.send_message(data[2], 'Спасибо что воспользовались нашими услугами по обмену валюты!', reply_markup=review_btn)
 
 
 # @dp.callback_query_handler(text='exchange_order')
@@ -224,6 +147,7 @@ async def exchange_one_order(callback: types.CallbackQuery):
     button_url = f'tg://user?id={chat_id}'
     markup = InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
+    markup.add(InlineKeyboardButton(text='Заявка исполнена', callback_data=f'ready|exchange|{order[0]}|{order[3]}'))
     markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|exchange|{order[0]}|{order[3]}'))
     markup.add(InlineKeyboardButton(text='Назад', callback_data='exchange_order'))
     
@@ -245,19 +169,8 @@ def register_admin_handler(dp: Dispatcher):
     dp.register_callback_query_handler(consultant_order, text='consultant_order')
     dp.register_callback_query_handler(consultant_one_order, lambda x: x.data and x.data.startswith('one_consultant|'))
 
-
-    dp.register_callback_query_handler(evisa_order, text='evisa_order')
-    dp.register_callback_query_handler(evisa_one_order, lambda x: x.data and x.data.startswith('visa|'))
     dp.register_callback_query_handler(delete_order, lambda x: x.data and x.data.startswith('delete|')) 
-
-    dp.register_callback_query_handler(charter_order, text='charter_order')
-    dp.register_callback_query_handler(charter_one_order, lambda x: x.data and x.data.startswith('one_charter|'))
-
-    dp.register_callback_query_handler(hotel_order, text='hotel_order')
-    dp.register_callback_query_handler(hotel_one_order, lambda x: x.data and x.data.startswith('one_hotel|'))
-
-    dp.register_callback_query_handler(tour_order, text='tour_order')
-    dp.register_callback_query_handler(tour_one_order, lambda x: x.data and x.data.startswith('one_tour|'))
+    dp.register_callback_query_handler(ready_order, lambda x: x.data and x.data.startswith('ready|')) 
 
     dp.register_callback_query_handler(exchange_order, text='exchange_order')
     dp.register_callback_query_handler(exchange_one_order, lambda x: x.data and x.data.startswith('one_exchange|'))

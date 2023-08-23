@@ -13,7 +13,7 @@ import math
 
 # @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
-    await message.answer('👋 Привет! Онлайн обмен валюты с максимальной выгодой с нашим чат ботом. Чтоб начать пользоваться нажми /menu')
+    await message.answer('👋Привет! Добро пожаловать в валютный обменный чат-бот. Я здесь, чтобы помочь вам с информацией о текущих обменных курсах и провести операции по обмену валюты. Если у вас есть какие-либо вопросы, не стесняйтесь спрашивать. Начнем! /menu')
 
 
 # @dp.message_handler(commands=['menu'], state="*")
@@ -54,19 +54,19 @@ async def consultant_2(callback: types.CallbackQuery):
 # @dp.callback_query_handler(text=['how_it_works'])
 async def how_it_works(callback: types.CallbackQuery):
     await callback.message.delete()
-    await callback.message.answer('Выбор валюты: Выберите валюту, которую хотите обменять.\n'
-                                  'Укажите сумму: Выберите сумму для обмена. \n'
-                                  'Получите выгодный курс: Мы предоставим Вам лучший доступный курс обмена. \n'
-                                  'Подтвердите операцию: Фиксируем курс, одобрите операцию обмена и внесите свои данные. \n'
-                                  'Получите вторую валюту: Наш курьер доставит VND (Вьетнамский донг), после чего Вы переведете свою валюту по зафиксированному курсу.', reply_markup=back_btn)
+    await callback.message.answer('🔹 Выбор валюты: Выберите валюту, которую хотите обменять.\n\n'
+                                  '🔹 Укажите сумму: Выберите сумму для обмена. \n\n'
+                                  '🔹 Получите выгодный курс: Мы предоставим Вам лучший доступный курс обмена. \n\n'
+                                  '🔹 Подтвердите операцию: Фиксируем курс, одобрите операцию обмена и внесите свои данные. \n\n'
+                                  '🔹 Получите вторую валюту: Наш курьер доставит VND (Вьетнамский донг), после чего Вы переведете свою валюту по зафиксированному курсу.', reply_markup=back_btn)
 
 # @dp.callback_query_handler(text=['advantages'])
 async def advantages(callback: types.CallbackQuery):
     await callback.message.delete()
-    await callback.message.answer('Обширное покрытие: принимаем к онлайн обмену: RUB (Российский рубль), KZT (Казахстанский тенге), KGS (Кыргызский сом), UZS (Узбекский сум).\n' 
-                                  'Лучшие курсы: получите самые выгодные курсы на рынке. \n'
-                                  'Быстро и удобно: Совершайте операции обмена за несколько кликов. Быстрая доставка VND (Вьетнамский донг) до двери. \n'
-                                  'Прозрачность: Ознакомьтесь с актуальными курсами перед проведением операции.', reply_markup=back_btn)
+    await callback.message.answer('🔹 Обширное покрытие: принимаем к онлайн обмену: RUB (Российский рубль), KZT (Казахстанский тенге), KGS (Кыргызский сом), UZS (Узбекский сум), USDT (Tether)\n\n' 
+                                  '🔹 Лучшие курсы: получите самые выгодные курсы на рынке. \n\n'
+                                  '🔹 Быстро и удобно: Совершайте операции обмена за несколько кликов. Быстрая доставка VND (Вьетнамский донг) до двери. \n\n'
+                                  '🔹 Прозрачность: Ознакомьтесь с актуальными курсами перед проведением операции.', reply_markup=back_btn)
 
 
 
@@ -81,7 +81,7 @@ class FSMCalculator(StatesGroup):
 async def calculator(callback: types.CallbackQuery):
     await FSMCalculator.currency.set()
     await callback.message.delete()
-    await callback.message.answer('Какую валюту хотите поменять?', reply_markup=currency_btn)
+    await callback.message.answer('Какую валюту хотите продать?', reply_markup=currency_btn)
     
 # @dp.callback_query_handler(state=FSMCalculator.currency)
 async def load_currency(callback: types.CallbackQuery, state=FSMContext):
@@ -98,8 +98,10 @@ async def load_amount(message: types.Message, state=FSMContext):
         amount = message.text
         async with state.proxy() as data:
             data['amount'] = amount
+            
             rate = sqlite_db.check_currency(data['currency'])
             sum = rate * int(amount)
+            
             data['vnd_amount'] = math.floor(sum)
             
         await message.delete()
@@ -192,7 +194,23 @@ async def approve_exchange(callback: types.CallbackQuery, state=FSMContext):
         await callback.message.delete()
         await menu_2(callback)
 
+# __________________Отзывы _________________________
 
+class FSMReview(StatesGroup):
+    review = State()
+    
+# @dp.callback_query_handler(text=['review'], state=None)
+async def review_start(callback: types.CallbackQuery):
+     await FSMReview.review.set()
+     await callback.message.delete()
+     await callback.message.answer('Напишите свой отзыв:')
+
+
+# @dp.message_handler(state=FSMReview.review)
+async def review_load(message: types.Message, state=FSMContext):
+    await bot.forward_message(-1001834865804, message.from_user.id, message.message_id)
+    await state.finish()
+    await message.answer('Спасибо, за отзыв')
 
 # __________________Регистрация хендлеров _________________________
 
@@ -218,3 +236,5 @@ def register_client_handler(dp: Dispatcher):
     dp.register_message_handler(amount_load, state=FSMExchange.amount)
     dp.register_callback_query_handler(approve_exchange, state=FSMExchange.aprove)
     
+    dp.register_callback_query_handler(review_start, text=['review'], state=None)
+    dp.register_message_handler(review_load, state=FSMReview.review)

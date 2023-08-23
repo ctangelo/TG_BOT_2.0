@@ -89,6 +89,5 @@ async def add_currency(state):
 def check_currency(currency):
     with base:
         cur.execute(f'SELECT {currency} FROM currency')
-        
         return cur.fetchone()[0]
     

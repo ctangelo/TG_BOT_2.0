@@ -10,13 +10,13 @@ back = InlineKeyboardButton('Назад', callback_data='main_menu')
 back_btn.add(back)
 
 inline_menu = InlineKeyboardMarkup(row_width=1)
-inline_advantages_btn = InlineKeyboardButton('Наши преимущества', callback_data='advantages')
-inline_how_it_works_btn = InlineKeyboardButton('Как это работает?', callback_data='how_it_works')
+inline_advantages_btn = InlineKeyboardButton('😎 Наши преимущества', callback_data='advantages')
+inline_how_it_works_btn = InlineKeyboardButton('👨‍💻💻 Как это работает?', callback_data='how_it_works')
 inline_exchange_btn = InlineKeyboardButton('💰 Обмен валюты', callback_data='exchange')
 inline_calculator_btn = InlineKeyboardButton('🧮 Калькулятор Обмена', callback_data='calculator')
-inline_reviews_btn = InlineKeyboardButton('Отзывы', callback_data='reviews')
-inline_consultant_btn = InlineKeyboardButton('👨‍💻 Консультация менеджера', callback_data='consultant')
-inline_menu.add(inline_advantages_btn).add(inline_how_it_works_btn).add(inline_exchange_btn).add(inline_calculator_btn).add(inline_reviews_btn).add(inline_consultant_btn)
+inline_reviews_btn = InlineKeyboardButton('👍 Наши Отзывы', url=f'https://t.me/TourObmen_Review')
+inline_consultant_btn = InlineKeyboardButton('📲 Консультация менеджера', callback_data='consultant')
+inline_menu.add(inline_how_it_works_btn).add(inline_advantages_btn).add(inline_exchange_btn).add(inline_calculator_btn).add(inline_reviews_btn).add(inline_consultant_btn)
 
 # __________________Обмен валюты_________________________
 
@@ -26,12 +26,12 @@ no_exchange_btn = InlineKeyboardButton('Нет, вернуться в меню',
 exchange_btn.add(yes_exchange_btn).add(no_exchange_btn)
 
 currency_btn = InlineKeyboardMarkup(row_width=1)
-rub_btn = InlineKeyboardButton('RUB', callback_data='rub')
-kzt_btn = InlineKeyboardButton('KZT', callback_data='kzt')
-kgs_btn = InlineKeyboardButton('KGS', callback_data='kgs')
-uzs_btn = InlineKeyboardButton('UZS', callback_data='uzs')
-usdt_btn = InlineKeyboardButton('USDT', callback_data='usdt')
-currency_btn.row(rub_btn, kzt_btn, kgs_btn, uzs_btn, usdt_btn)
+rub_btn = InlineKeyboardButton('🇷🇺 RUB', callback_data='rub')
+kzt_btn = InlineKeyboardButton('🇰🇿 KZT', callback_data='kzt')
+kgs_btn = InlineKeyboardButton('🇰🇬 KGS', callback_data='kgs')
+uzs_btn = InlineKeyboardButton('🇺🇿 UZS', callback_data='uzs')
+usdt_btn = InlineKeyboardButton('🌐 USDT', callback_data='usdt')
+currency_btn.row(rub_btn, kzt_btn, kgs_btn).row(uzs_btn, usdt_btn)
 
 def choose_bank_btn(currency):
     if currency == 'rub':
@@ -66,23 +66,9 @@ def choose_bank_btn(currency):
     return bank_btn
 
 
-
-
-# exchange_cities = InlineKeyboardMarkup(row_width=1)
-# nha_trang = InlineKeyboardButton('Нячанг', callback_data='нячанг')
-# muyne = InlineKeyboardButton('Муйне', callback_data='муйне')
-# phukok = InlineKeyboardButton('о.Фукуок', callback_data='о.фукуок')
-# danang = InlineKeyboardButton('Дананг', callback_data='дананг')
-# hochimin = InlineKeyboardButton('Хошимин', callback_data='хошимин')
-# hanoi = InlineKeyboardButton('Ханой', callback_data='ханой')
-# exchange_cities.row(nha_trang, phukok, muyne) 
-# exchange_cities.row(danang, hochimin, hanoi)
-
-# exchange_delivery = InlineKeyboardMarkup(row_width=1)
-# delivery_cash = InlineKeyboardButton('Доставка наличные', callback_data='доставка наличные')
-# pickup = InlineKeyboardButton('Самовывоз', callback_data='самовывоз')
-# atm = InlineKeyboardButton('Получить через банкомат', callback_data='банкомат')
-# exchange_delivery.add(delivery_cash, pickup, atm)
+review_btn = InlineKeyboardMarkup(row_width=1)
+review = InlineKeyboardButton('Оставить отзыв', callback_data='review')
+review_btn.add(review)
 
 approve_btn = InlineKeyboardMarkup(row_width=1)
 approve = InlineKeyboardButton('Подтвердить', callback_data='aprove')
