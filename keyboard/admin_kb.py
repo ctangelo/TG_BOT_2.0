@@ -29,7 +29,7 @@ def gen_inline_exchange_orders(data):
     urlkb_exchange_orders = InlineKeyboardMarkup(row_width=1)
     for i in data:
         urlkb_exchange_orders.add(InlineKeyboardButton(f'Обмен {i[3]} {i[1]} на {i[4]} VND',
-                                                 callback_data=f'one_exchange|{i[0]}|{i[3]}'))
+                                                 callback_data=f'one_exchange|{i[0]}|{i[6]}'))
     return urlkb_exchange_orders.add(InlineKeyboardButton('Назад', callback_data='admin_menu'))
 
 

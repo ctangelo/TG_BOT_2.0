@@ -9,8 +9,8 @@ def sql_start():
     cur = base.cursor()
     if base:
         print("Database connected successfully")
-    # base.execute('DROP TABLE exchange')
-    base.execute('CREATE TABLE IF NOT EXISTS exchange(user_id INTEGER, currency TEXT, bank TEXT, amount INTEGER, vnd_amount INTEGER, aprove TEXT)')
+    # base.execute('DROP TABLE consultant')
+    base.execute('CREATE TABLE IF NOT EXISTS exchange(user_id INTEGER, currency TEXT, bank TEXT, amount INTEGER, vnd_amount INTEGER, aprove TEXT, date TEXT)')
     base.execute('CREATE TABLE IF NOT EXISTS currency(rub INTEGER, kzt INTEGER, kgs INTEGER, uzs INTEGER, usdt INTEGER)')
     base.execute('CREATE TABLE IF NOT EXISTS consultant(user_id INTEGER)')
     base.commit()
@@ -56,7 +56,7 @@ def count_exchange():
 
 async def add_exchange(state):
     async with state.proxy() as data:
-        cur.execute('INSERT INTO exchange VALUES (?, ?, ?, ?, ?, ?)', tuple(data.values()))
+        cur.execute('INSERT INTO exchange VALUES (?, ?, ?, ?, ?, ?, ?)', tuple(data.values()))
         base.commit()
     await bot.send_message(ID, 'У вас новая заявка на обмен валюты', reply_markup=order_exchange_btn)
 
@@ -67,15 +67,15 @@ async def see_exchange():
         return cur.fetchall()
     
 
-async def one_exchange(user_id, amount):
+async def one_exchange(user_id, date):
     with base:
-        cur.execute(f'SELECT * FROM exchange WHERE (user_id = ?) AND (amount = ?)', (user_id, amount))
+        cur.execute(f'SELECT * FROM exchange WHERE (user_id = ?) AND (date = ?)', (user_id, date))
         return cur.fetchone()
 
 
-async def delete_exchange(user_id, amount):
+async def delete_exchange(user_id, date):
     with base:
-        cur.execute('DELETE FROM exchange WHERE (user_id = ?) AND (amount = ?)', (user_id, amount))
+        cur.execute('DELETE FROM exchange WHERE (user_id = ?) AND (date = ?)', (user_id, date))
 
 # ____________currency_____________________________
 

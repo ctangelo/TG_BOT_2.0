@@ -9,11 +9,13 @@ from keyboard.admin_kb import gen_inline_main_menu
 from handlers.admin import ID
 from database import sqlite_db
 import math
+from datetime import datetime
 
 
 # @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
-    await message.answer('👋Привет! Добро пожаловать в валютный обменный чат-бот. Я здесь, чтобы помочь вам с информацией о текущих обменных курсах и провести операции по обмену валюты. Если у вас есть какие-либо вопросы, не стесняйтесь спрашивать. Начнем! /menu')
+    photo = open("/root/TG_BOT_2.0/photo/logo3.png", 'rb')
+    await bot.send_photo(message.from_user.id, photo, caption='👋Привет! Добро пожаловать в Тур Обмен - валютно обменный чат-бот. Я здесь, чтобы помочь вам с информацией о текущих обменных курсах и провести операции по обмену валюты. Если у вас есть какие-либо вопросы, не стесняйтесь спрашивать. Начнем! /menu')
 
 
 # @dp.message_handler(commands=['menu'], state="*")
@@ -41,7 +43,13 @@ async def consultant(message: types.Message, state: FSMContext):
         await state.finish()
     await message.delete()
     await message.answer('Ваша заявки принята, консультант свяжется с вами в ближайшее время', reply_markup=back_btn)
-    await sqlite_db.add_consultant(message.from_user.id)
+    check_user = await sqlite_db.one_consultant(message.from_user.id)
+    print(check_user)
+    if check_user[0] == message.from_user.id:
+        print(check_user)
+    else:
+        await sqlite_db.add_consultant(message.from_user.id)
+        print(check_user)
     
 
 # @dp.callback_query_handler(text=['consultant'])
@@ -49,7 +57,7 @@ async def consultant_2(callback: types.CallbackQuery):
     await callback.message.answer('Ваша заявки принята, консультант свяжется с вами в ближайшее время', reply_markup=back_btn)
     await callback.message.delete()
     await sqlite_db.add_consultant(callback.from_user.id)
-
+    
 
 # @dp.callback_query_handler(text=['how_it_works'])
 async def how_it_works(callback: types.CallbackQuery):
@@ -58,7 +66,8 @@ async def how_it_works(callback: types.CallbackQuery):
                                   '🔹 Укажите сумму: Выберите сумму для обмена. \n\n'
                                   '🔹 Получите выгодный курс: Мы предоставим Вам лучший доступный курс обмена. \n\n'
                                   '🔹 Подтвердите операцию: Фиксируем курс, одобрите операцию обмена и внесите свои данные. \n\n'
-                                  '🔹 Получите вторую валюту: Наш курьер доставит VND (Вьетнамский донг), после чего Вы переведете свою валюту по зафиксированному курсу.', reply_markup=back_btn)
+                                  '🔹 Получите вторую валюту: Наш курьер доставит VND (Вьетнамский донг), после чего Вы переведете свою валюту по зафиксированному курсу.'
+                                  '🔹 График работы: Ежедневно с 09:00 до 18:00', reply_markup=back_btn)
 
 # @dp.callback_query_handler(text=['advantages'])
 async def advantages(callback: types.CallbackQuery):
@@ -105,7 +114,7 @@ async def load_amount(message: types.Message, state=FSMContext):
             data['vnd_amount'] = math.floor(sum)
             
         await message.delete()
-        await message.answer(f'Вы получите {math.floor(sum)} VND', reply_markup=back_btn)
+        await message.answer(f'Вы получите {"{0:,}".format(int(math.floor(sum))).replace(",", " ")} VND', reply_markup=back_btn)
         await state.finish()
         
 
@@ -170,7 +179,7 @@ async def amount_load(message: types.Message, state=FSMContext):
             
         await FSMExchange.next()
         await message.delete()
-        await message.answer(f'Вы получите {math.floor(sum)} VND', reply_markup=approve_btn)
+        await message.answer(f'Вы получите {"{0:,}".format(int(math.floor(sum))).replace(",", " ")} VND', reply_markup=approve_btn)
     except ValueError:
         await FSMExchange.amount.set()
         await message.answer('Введите число цифрами:')
@@ -182,11 +191,15 @@ async def approve_exchange(callback: types.CallbackQuery, state=FSMContext):
     if callback.data == 'aprove':
         async with state.proxy() as data:
             data['aprove'] = 'yes'
-
+            data['time'] = datetime.now()
+            amount = int(data['amount'])
+            
+            currency = data['currency']
+            vnd_amount = data['vnd_amount']
         await sqlite_db.add_exchange(state)
         await state.finish()
         await callback.message.delete()
-        await callback.message.answer('Спасибо, ваша заявка принята, оператор свяжется с вами в ближайшее время', reply_markup=back_btn)
+        await callback.message.answer(f'Обмен {"{0:,}".format(amount).replace(",", " ")} {currency} на {"{0:,}".format(vnd_amount).replace(",", " ")} VND\n Спасибо, ваша заявка принята, оператор свяжется с вами в ближайшее время', reply_markup=back_btn)
         
 
     else:
@@ -212,8 +225,24 @@ async def review_load(message: types.Message, state=FSMContext):
     await state.finish()
     await message.answer('Спасибо, за отзыв')
 
-# __________________Регистрация хендлеров _________________________
+# __________________Курс Валют _________________________
 
+
+# @dp.callback_query_handler(text=['course'])
+async def course(callback: types.CallbackQuery):
+    await callback.message.delete()
+    usdt = int(sqlite_db.check_currency('usdt') * 100)
+    rub = int(sqlite_db.check_currency('rub') * 10000)
+    kzt = int(sqlite_db.check_currency('kzt') * 50000)
+    kgs = int(sqlite_db.check_currency('kgs') * 10000)
+    uzs = int(sqlite_db.check_currency('uzs') * 1000000)
+
+    await callback.message.answer(f'🇺🇸 100 USDT = {"{0:,}".format(usdt).replace(",", " ")} VND\n🇷🇺 10 000 RUB = {"{0:,}".format(rub).replace(",", " ")} VND\n'
+                         f'🇰🇿 50 000 KZT = {"{0:,}".format(kzt).replace(",", " ")} VND\n🇰🇬 10 000 KGS = {"{0:,}".format(kgs).replace(",", " ")} VND\n'
+                         f'🇺🇿 1 000 000 UZS = {"{0:,}".format(uzs).replace(",", " ")} VND', reply_markup=back_btn)
+
+
+# __________________Регистрация хендлеров _________________________
 
 def register_client_handler(dp: Dispatcher):
     dp.register_message_handler(start_message, commands=['start'])
@@ -238,3 +267,5 @@ def register_client_handler(dp: Dispatcher):
     
     dp.register_callback_query_handler(review_start, text=['review'], state=None)
     dp.register_message_handler(review_load, state=FSMReview.review)
+
+    dp.register_callback_query_handler(course, text=['course'])

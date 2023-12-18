@@ -41,41 +41,41 @@ async def rub_load(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['rub'] = int(message.text) / 10000
     await FSMAddcurrency.next()
-    await message.answer('Сколько VND за 10.000 KZT?')
+    await message.answer('Сколько VND за 50.000 KZT?')
 
 
 # @dp.message_handler(state=FSMAddcurrency.kzt)
 async def kzt_load(message: types.Message, state: FSMContext):
     
     async with state.proxy() as data:
-        data['kzt'] = int(message.text) / 10000
+        data['kzt'] = int(message.text) / 50000
     await FSMAddcurrency.next()
-    await message.answer('Сколько VND за 1.000 KGS?')
+    await message.answer('Сколько VND за 10.000 KGS?')
 
 
 # @dp.message_handler(state=FSMAddcurrency.kgs)
 async def kgs_load(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
-        data['kgs'] = int(message.text) / 1000
+        data['kgs'] = int(message.text) / 10000
     await FSMAddcurrency.next()
-    await message.answer('Сколько VND за 100.000 UZS?')
+    await message.answer('Сколько VND за 1.000.000 UZS?')
 
 
 # @dp.message_handler(state=FSMAddcurrency.uzs)
 async def uzs_load(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
-        data['uzs'] = int(message.text) / 10000
+        data['uzs'] = int(message.text) / 1000000
     await FSMAddcurrency.next()
-    await message.answer('Сколько VND за 1 USDT?')
+    await message.answer('Сколько VND за 100 USDT?')
 
 
 # @dp.message_handler(state=FSMAddcurrency.usdt)
 async def usdt_load(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
-        data['usdt'] = int(message.text)
+        data['usdt'] = int(message.text) / 100
     await sqlite_db.add_currency(state)
     await message.answer('Готово')
     await state.finish()
@@ -147,8 +147,8 @@ async def exchange_one_order(callback: types.CallbackQuery):
     button_url = f'tg://user?id={chat_id}'
     markup = InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(text='написать пользователю', url=button_url))
-    markup.add(InlineKeyboardButton(text='Заявка исполнена', callback_data=f'ready|exchange|{order[0]}|{order[3]}'))
-    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|exchange|{order[0]}|{order[3]}'))
+    markup.add(InlineKeyboardButton(text='Заявка исполнена', callback_data=f'ready|exchange|{order[0]}|{order[6]}'))
+    markup.add(InlineKeyboardButton(text='Удалить заявку', callback_data=f'delete|exchange|{order[0]}|{order[6]}'))
     markup.add(InlineKeyboardButton(text='Назад', callback_data='exchange_order'))
     
     await callback.message.answer(f'Обмен\n{order[3]} {order[1]} на {order[4]} VND\nБанк: {order[2]}', reply_markup=markup)

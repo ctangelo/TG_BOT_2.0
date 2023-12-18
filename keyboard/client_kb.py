@@ -10,13 +10,14 @@ back = InlineKeyboardButton('Назад', callback_data='main_menu')
 back_btn.add(back)
 
 inline_menu = InlineKeyboardMarkup(row_width=1)
-inline_advantages_btn = InlineKeyboardButton('😎 Наши преимущества', callback_data='advantages')
-inline_how_it_works_btn = InlineKeyboardButton('👨‍💻💻 Как это работает?', callback_data='how_it_works')
-inline_exchange_btn = InlineKeyboardButton('💰 Обмен валюты', callback_data='exchange')
+inline_advantages_btn = InlineKeyboardButton('😎 Наши Преимущества', callback_data='advantages')
+inline_course_btn = InlineKeyboardButton('💱 Курсы Валют', callback_data='course')
+inline_how_it_works_btn = InlineKeyboardButton('👨‍💻💻 Как Это Работает?', callback_data='how_it_works')
+inline_exchange_btn = InlineKeyboardButton('💰 Обмен Валюты', callback_data='exchange')
 inline_calculator_btn = InlineKeyboardButton('🧮 Калькулятор Обмена', callback_data='calculator')
 inline_reviews_btn = InlineKeyboardButton('👍 Наши Отзывы', url=f'https://t.me/TourObmen_Review')
-inline_consultant_btn = InlineKeyboardButton('📲 Консультация менеджера', callback_data='consultant')
-inline_menu.add(inline_how_it_works_btn).add(inline_advantages_btn).add(inline_exchange_btn).add(inline_calculator_btn).add(inline_reviews_btn).add(inline_consultant_btn)
+inline_consultant_btn = InlineKeyboardButton('📲 Консультация Менеджера', callback_data='consultant')
+inline_menu.add(inline_how_it_works_btn).add(inline_course_btn).add(inline_advantages_btn).add(inline_exchange_btn).add(inline_calculator_btn).add(inline_reviews_btn).add(inline_consultant_btn)
 
 # __________________Обмен валюты_________________________
 
